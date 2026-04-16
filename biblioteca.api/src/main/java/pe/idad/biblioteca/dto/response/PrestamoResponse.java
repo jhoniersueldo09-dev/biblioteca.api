@@ -1,24 +1,26 @@
 package pe.idad.biblioteca.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
+@Builder
 public class PrestamoResponse {
 
-    //ID del préstamo
+    // ID del préstamo
     private Long id;
 
-    //Fecha en la que se realizó el préstamo del libro
+    // Fecha en la que se realizó el préstamo
     private LocalDate fechaPrestamo;
 
-    //Fecha en la que se debe devolver el libro o fue devuelto
+    // Fecha en la que se devolvió el libro (null si aún no se devuelve)
     private LocalDate fechaDevolucion;
 
-    //ID del usuario que realizó el préstamo
+    // Información del usuario (ej: email o nombre)
     private String usuario;
 
-    //ID del libro prestado
+    // Información del libro (ej: título)
     private String libro;
 }

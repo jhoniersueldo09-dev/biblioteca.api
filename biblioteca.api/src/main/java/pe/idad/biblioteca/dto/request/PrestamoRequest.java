@@ -9,17 +9,17 @@ import java.time.LocalDate;
 public class PrestamoRequest {
 
     // Fecha en la que se realiza el préstamo
-    @NotNull
+    @NotNull(message = "La fecha de préstamo es obligatoria")
     private LocalDate fechaPrestamo;
 
     // Fecha estimada o real de devolución del libro
     private LocalDate fechaDevolucion;
 
     // ID del usuario que solicita el préstamo (obligatorio)
-    @NotNull
+    @NotNull(message = "El usuario es obligatorio")
     private Long usuarioId;
 
     // ID del libro que se está prestando (obligatorio)
-    @NotNull
+    @NotNull(message = "El libro es obligatorio")
     private Long libroId;
 }

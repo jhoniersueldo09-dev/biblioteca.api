@@ -3,9 +3,11 @@ package pe.idad.biblioteca.service.Impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.idad.biblioteca.dto.request.PrestamoRequest;
+import pe.idad.biblioteca.dto.response.PrestamoResponse;
 import pe.idad.biblioteca.entity.Libro;
 import pe.idad.biblioteca.entity.Prestamo;
 import pe.idad.biblioteca.entity.Usuario;
+import pe.idad.biblioteca.mapper.PrestamoMapper;
 import pe.idad.biblioteca.repository.LibroRepository;
 import pe.idad.biblioteca.repository.PrestamoRepository;
 import pe.idad.biblioteca.repository.UsuarioRepository;
@@ -13,33 +15,46 @@ import pe.idad.biblioteca.service.PrestamoService;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
-// Implementación del servicio de préstamos (aquí está la lógica principal)
 @Service
 @RequiredArgsConstructor
 public class PrestamoServiceImpl implements PrestamoService {
 
-    // Repositorios para acceder a la base de datos
     private final PrestamoRepository prestamoRepository;
     private final UsuarioRepository usuarioRepository;
     private final LibroRepository libroRepository;
+    private final PrestamoMapper prestamoMapper;
 
     // Busca todos los préstamos
     @Override
-    public List<Prestamo> listar() {
-        return prestamoRepository.findAll();
+    public List<PrestamoResponse> listar() {
+        return prestamoRepository.findAll()
+                .stream()
+                .map(prestamoMapper::toResponse)
+                .toList();
     }
 
     // Busca un préstamo por ID
     @Override
-    public Optional<Prestamo> buscarPorId(Long id) {
-        return prestamoRepository.findById(id);
+    public PrestamoResponse buscarPorId(Long id) {
+        Prestamo prestamo = prestamoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+
+        return prestamoMapper.toResponse(prestamo);
     }
 
     // Registra un nuevo préstamo
     @Override
-    public Prestamo guardar(PrestamoRequest request) {
+    public PrestamoResponse guardar(PrestamoRequest request) {
+
+        // 🔥 VALIDACIONES
+        if (request.getUsuarioId() == null) {
+            throw new RuntimeException("El usuario es obligatorio");
+        }
+
+        if (request.getLibroId() == null) {
+            throw new RuntimeException("El libro es obligatorio");
+        }
 
         // buscar al usuario por Id
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
@@ -54,13 +69,13 @@ public class PrestamoServiceImpl implements PrestamoService {
             throw new RuntimeException("El libro no está disponible");
         }
 
-        // Crea el préstamo con los datos recibidos
+        // Crea el préstamo
         Prestamo prestamo = Prestamo.builder()
                 .usuario(usuario)
                 .libro(libro)
                 .fechaPrestamo(request.getFechaPrestamo() != null
                         ? request.getFechaPrestamo()
-                        : LocalDate.now()) // Si no envían fecha, usa la actual
+                        : LocalDate.now())
                 .fechaDevolucion(request.getFechaDevolucion())
                 .build();
 
@@ -69,32 +84,39 @@ public class PrestamoServiceImpl implements PrestamoService {
         libroRepository.save(libro);
 
         // Guardar préstamo
-        return prestamoRepository.save(prestamo);
+        Prestamo guardado = prestamoRepository.save(prestamo);
+
+        return prestamoMapper.toResponse(guardado);
     }
 
     // Elimina un préstamo
     @Override
     public void eliminar(Long id) {
+
+        if (!prestamoRepository.existsById(id)) {
+            throw new RuntimeException("Préstamo no existe");
+        }
+
         prestamoRepository.deleteById(id);
     }
 
     // Préstamos del usuario logueado
     @Override
-    public List<Prestamo> prestamosPorEmail(String email) {
+    public List<PrestamoResponse> prestamosPorEmail(String email) {
 
-        // Busca el usuario por email
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Retorna sus préstamos
-        return prestamoRepository.findByUsuarioId(usuario.getId());
+        return prestamoRepository.findByUsuarioId(usuario.getId())
+                .stream()
+                .map(prestamoMapper::toResponse)
+                .toList();
     }
 
     // Lógica para devolver un libro
     @Override
-    public Prestamo devolver(Long id, String email) {
+    public PrestamoResponse devolver(Long id, String email) {
 
-        // Busca el préstamo por ID
         Prestamo prestamo = prestamoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
 
@@ -115,7 +137,9 @@ public class PrestamoServiceImpl implements PrestamoService {
         Libro libro = prestamo.getLibro();
         libro.setDisponible(true);
         libroRepository.save(libro);
-        // Guarda los cambios del préstamo
-        return prestamoRepository.save(prestamo);
+
+        Prestamo actualizado = prestamoRepository.save(prestamo);
+
+        return prestamoMapper.toResponse(actualizado);
     }
 }

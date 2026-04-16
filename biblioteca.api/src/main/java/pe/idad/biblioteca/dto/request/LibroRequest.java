@@ -8,11 +8,10 @@ import lombok.Data;
 @Data
 public class LibroRequest {
 
-    // Título del libro (obligatorio)
-    @NotBlank
+    @NotBlank(message = "El título es obligatorio")
     private String titulo;
 
-    // Autor del libro (obligatorio)
-    @NotBlank
+    @NotBlank(message = "El autor es obligatorio")
     private String autor;
+
 }

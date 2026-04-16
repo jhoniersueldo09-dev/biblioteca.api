@@ -2,46 +2,61 @@ package pe.idad.biblioteca.service.Impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import pe.idad.biblioteca.dto.request.LibroRequest;
+import pe.idad.biblioteca.dto.response.LibroResponse;
 import pe.idad.biblioteca.entity.Libro;
+import pe.idad.biblioteca.mapper.LibroMapper;
 import pe.idad.biblioteca.repository.LibroRepository;
 import pe.idad.biblioteca.service.LibroService;
 
 import java.util.List;
-import java.util.Optional;
 
-// Implementación del servicio de libros
-// Aquí se maneja la lógica básica CRUD de la entidad Libro
 @Service
 @RequiredArgsConstructor
 public class LibroServiceImpl implements LibroService {
 
-
-    // Repositorio para acceder a la base de datos
     private final LibroRepository libroRepository;
+    private final LibroMapper libroMapper;
 
-
-    // Obtiene la lista de todos los libros
     @Override
-    public List<Libro> listar() {
-        return libroRepository.findAll();
+    public List<LibroResponse> listar() {
+        return libroRepository.findAll()
+                .stream()
+                .map(libroMapper::toResponse)
+                .toList();
     }
 
-    // Guarda un libro (crear o actualizar)
     @Override
-    public Libro guardar(Libro libro) {
-        return libroRepository.save(libro);
+    public LibroResponse guardar(LibroRequest request) {
+
+        if (request.getTitulo() == null || request.getTitulo().isEmpty()) {
+            throw new RuntimeException("El título es obligatorio");
+        }
+
+        if (request.getAutor() == null || request.getAutor().isEmpty()) {
+            throw new RuntimeException("El autor es obligatorio");
+        }
+
+        Libro libro = libroMapper.toEntity(request);
+        libro.setDisponible(true);
+
+        return libroMapper.toResponse(
+                libroRepository.save(libro)
+        );
     }
 
-
-    // Busca un libro por su ID
     @Override
-    public Optional<Libro> buscarPorId(Long id) {
-        return libroRepository.findById(id);
+    public LibroResponse buscarPorId(Long id) {
+        return libroRepository.findById(id)
+                .map(libroMapper::toResponse)
+                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
     }
 
-    // Elimina un libro por su ID
     @Override
     public void eliminar(Long id) {
+        if (!libroRepository.existsById(id)) {
+            throw new RuntimeException("Libro no existe");
+        }
         libroRepository.deleteById(id);
     }
 }
