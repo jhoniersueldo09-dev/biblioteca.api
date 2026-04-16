@@ -21,7 +21,7 @@ public interface PrestamoMapper {
     @Mapping(target = "libro", expression = "java(mapLibro(prestamo))")
     PrestamoResponse toResponse(Prestamo prestamo);
 
-    // 🔥 Métodos auxiliares (más limpio y mantenible)
+    // Métodos auxiliares (más limpio y mantenible)
     default String mapUsuario(Prestamo prestamo) {
         return prestamo.getUsuario() != null
                 ? prestamo.getUsuario().getNombre()

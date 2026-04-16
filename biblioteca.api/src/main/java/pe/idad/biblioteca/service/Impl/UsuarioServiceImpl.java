@@ -16,11 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Implementación del servicio de usuarios.
- * Aquí está toda la lógica de negocio: validaciones, encriptación de contraseña
- * y asignación de roles.
- */
 @Service
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
@@ -30,15 +25,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
 
-    /**
-     * Crea un nuevo usuario en el sistema.
-     *
-     * Pasos que hace:
-     * 1. Valida que el email no esté registrado
-     * 2. Encripta la contraseña
-     * 3. Valida y asigna los roles
-     * 4. Guarda el usuario y devuelve la información
-     */
     @Override
     public UsuarioResponse crear(UsuarioRequest request) {
 
@@ -70,9 +56,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
-    /**
-     * Devuelve la lista de todos los usuarios registrados.
-     */
+
     @Override
     public List<UsuarioResponse> listar() {
         return usuarioRepository.findAll()

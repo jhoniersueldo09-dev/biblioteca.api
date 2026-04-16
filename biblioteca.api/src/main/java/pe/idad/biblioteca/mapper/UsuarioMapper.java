@@ -10,15 +10,12 @@ import pe.idad.biblioteca.entity.Usuario;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 @Mapper(componentModel = "spring")
 public interface UsuarioMapper {
-
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "roles", source = "roles")
     Usuario toEntity(UsuarioRequest request);
-
 
     @Mapping(target = "roles", expression = "java(mapRoles(usuario.getRoles()))")
     UsuarioResponse toResponse(Usuario usuario);
