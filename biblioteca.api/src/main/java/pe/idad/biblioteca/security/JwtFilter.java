@@ -36,8 +36,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Permite el acceso sin token a endpoints públicos
         if (path.startsWith("/auth")
-                || path.startsWith("/roles")
-                || path.startsWith("/usuarios")) {
+                || path.startsWith("/roles")) {
             filterChain.doFilter(request, response);
             return;
         }
